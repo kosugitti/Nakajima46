@@ -156,13 +156,17 @@ table(dat.tb$Name)
 ## 53
 
 ## 54
-dat.tb$Name |> table() |> sort(decreasing = TRUE)
+dat.tb$Name |>
+  table() |>
+  sort(decreasing = TRUE)
 
 ## 55
 dat.tb$team |> unique()
 
 ## 56
-dat.tb$team |> unique() |> length()
+dat.tb$team |>
+  unique() |>
+  length()
 
 ## 57
 dat.tb$team <- dat.tb$team |> as.factor()
@@ -177,7 +181,9 @@ dat.tb$position <- dat.tb$position |> as.factor()
 dat.tb$position
 
 ## 60
-dat.tb |> select(team, bloodType, position) |> summary()
+dat.tb |>
+  select(team, bloodType, position) |>
+  summary()
 
 # 6.2.7 数値データの集計と新しい変数の作成 -------------------------------------------------
 ## 61
@@ -199,20 +205,20 @@ dat.tb$salary |> quantile()
 dat.tb$salary |> quantile(probs = c(0, 0.25, 0.33, 0.95, 1))
 
 ## 67
-dat.tb <- dat.tb |> mutate(bmi = weight / (height/100)^2)
+dat.tb <- dat.tb |> mutate(bmi = weight / (height / 100)^2)
 
 ## 68
 dat.tb$bmi |> summary()
 
 ## 69
-dat.tb <- dat.tb |> mutate(bmi_category = ifelse(bmi >= 25, "HighBMI","Standard"))
+dat.tb <- dat.tb |> mutate(bmi_category = ifelse(bmi >= 25, "HighBMI", "Standard"))
 
 ## 70
 dat.tb$bmi_category |> table()
 
 # 6.2.8 データの分類と条件付き処理 -----------------------------------------------------
 ## 71
-dat.tb <- dat.tb |> 
+dat.tb <- dat.tb |>
   mutate(position2 = case_when(position == "投手" ~ "投手", TRUE ~ "野手"))
 
 ## 72
@@ -225,7 +231,7 @@ dat.tb$position2 |> table()
 table(dat.tb$position, dat.tb$position2)
 
 ## 75
-dat.tb <- dat.tb |> 
+dat.tb <- dat.tb |>
   mutate(League = case_when(
     team %in% c("Giants", "Carp", "Tigers", "Swallows", "Dragons", "DeNA") ~ "Central",
     TRUE ~ "Pacific"
@@ -238,8 +244,8 @@ dat.tb$League <- dat.tb$League |> as.factor()
 table(dat.tb$team, dat.tb$League)
 
 ## 78
-dat.tb <- dat.tb |> 
-  mutate(Year_num = Year |>  str_remove("年度") |> as.numeric())
+dat.tb <- dat.tb |>
+  mutate(Year_num = Year |> str_remove("年度") |> as.numeric())
 
 ## 79
 dat.tb |> select(Year, Year_num)
@@ -248,25 +254,200 @@ dat.tb |> select(Year, Year_num)
 
 # 6.2.9 データのフィルタリングと選択 ----------------------------------------------------
 ## 81
-dat.tb |> filter(position2 == "野手") |> head()
+dat.tb |>
+  filter(position2 == "野手") |>
+  head()
 
 ## 82
-dat.tb |> filter(position2 == "野手") |> summary()
+dat.tb |>
+  filter(position2 == "野手") |>
+  summary()
 
 ## 83
-dat.tb |> filter(Year_num <= 2015) |> head()
+dat.tb |>
+  filter(Year_num <= 2015) |>
+  head()
 
 ## 84
-dat.tb |> filter(Year_num == 2020 & League == "Central") |> head()
+dat.tb |>
+  filter(Year_num == 2020 & League == "Central") |>
+  head()
 
 ## 85
-dat.tb |> filter(Year_num == 2020 & League == "Central") |> nrow()
+dat.tb |>
+  filter(Year_num == 2020 & League == "Central") |>
+  nrow()
 
 ## 86
-dat.tb |> select(Name, team, height, weight) |> head()
+dat.tb |>
+  select(Name, team, height, weight) |>
+  head()
 
 ## 87
-dat.tb |> select(Name, team, salary, Year_num) |> filter(Year_num == 2020) |> head()
+dat.tb |>
+  select(Name, team, salary, Year_num) |>
+  filter(Year_num == 2020) |>
+  head()
 
 ## 88
-dat.tb |> arrange(desc(salary)) |> head(1)
+dat.tb |>
+  arrange(desc(salary)) |>
+  head(1)
+
+## 89
+dat.tb |>
+  filter(Year_num == 2020 & League == "Central") |>
+  arrange(desc(salary) |> head(1))
+
+## 90
+dat.tb |>
+  filter(team == "Giants") |>
+  summarise(avg_height = mean(height), avg_weight = mean(weight))
+
+
+# 6.2.10 グループ集計と要約統計量 ------------------------------------------------------------
+## 91
+dat.tb |>
+  group_by(team) |>
+  summarise(mean_salary = mean(salary)) |>
+  arrange(desc(mean_salary))
+
+## 92
+dat.tb |>
+  group_by(Year_num, team) |>
+  summarise(mean_salary = mean(salary)) |>
+  head(10)
+
+## 93
+dat.tb |>
+  group_by(Year_num, team) |>
+  summarise(
+    mean_salary = mean(salary),
+    max_salary = max(salary),
+    min_salary = min(salary)
+  ) |>
+  head(10)
+
+## 94
+dat.tb |>
+  group_by(bloodType) |>
+  summarise(mean_bmi = mean(bmi)) |>
+  arrange(desc(mean_bmi))
+
+## 95
+dat.tb |>
+  group_by(League) |>
+  summarise(
+    mean_salary = mean(salary),
+    median_salary = median(salary)
+  )
+
+## 96
+dat.tb |>
+  group_by(position) |>
+  summarise(
+    avg_height = mean(height),
+    avg_weight = mean(weight)
+  ) |>
+  arrange(desc(avg_height))
+
+## 97 年度ごとのHR総数
+dat.tb |> group_by(Year_num) |> 
+  summarise(total_HR =sum(HR, na.rm = TRUE))
+
+## 98 コードの整形
+
+## 99 変数を限定したデータフレームの作成
+dat.tb |> select(Year_num, Name, height, weight) |> head()
+
+## 100 
+dat.tb |> select(Year_num,Name, height, weight) |> 
+  filter(Year_num == 2020) |> head()
+
+
+# 6.2.11 データ変形と再構成 --------------------------------------------------------
+## 101 
+dat.tb2 <- dat.tb |> select(Year_num, Name, height,weight) |> 
+  filter(Year_num == 2020) |> select(-Year_num)
+
+## 102
+head(dat.tb2)
+
+## 103
+model <- lm(height ~ weight, data = dat.tb2)
+
+## 104
+summary(model)
+
+## 105
+dat.tb2 |> pivot_longer(-Name, names_to = "variable",values_to = "value") |> head()
+
+## 106
+dat.tb2_long <- dat.tb2 |> pivot_longer(-Name, names_to = "variable",values_to = "value") 
+
+## 107
+str(dat.tb2_long)
+
+## 108
+dat.tb2_long |> group_by(variable) |> summarise(mean_value = mean(value))
+
+## 109
+dat.tb2_long |> pivot_wider(names_from = variable, values_from = value) |> head()
+
+## 110
+bat_stats <- dat.tb |> filter(position2 == "野手") |> 
+  select(Year_num, Name, AtBats, Hit, HR)
+head(bat_stats)
+
+# 6.2.12 データの加工と計算 --------------------------------------------------------
+## 111
+bat_stats <- bat_stats |> mutate(avg = Hit/AtBats)
+
+## 112
+head(bat_stats)
+
+## 113
+bat_stats |> arrange(desc(avg)) |> head(10)
+
+## 114
+bat_stats |> group_by(Year_num) |> summarise(avg_batting = mean(avg, na.rm =TRUE))
+
+## 115
+bat_stats_long <-bat_stats |> 
+  pivot_longer(c(AtBats, Hit, HR, avg), names_to = "stat", values_to = "value")
+
+## 116
+head(bat_stats_long)
+
+## 117
+bat_stats_long |> group_by(Name, stat) |> 
+  summarise(mean_value = mean(value, na.rm = TRUE)) |> head()
+
+## 118
+player_avg <- bat_stats_long |> group_by(Name, stat) |> 
+  summarise(means_value = mean(value, na.rm = TRUE)) |> 
+  pivot_wider(names_from = stat, values_from = means_value)
+
+## 119
+player_avg |> arrange(desc(avg)) |> head(1)
+
+
+# 6.2.13 データ可視化の基礎 --------------------------------------------------------
+## 121
+ggplot()
+
+## 122
+ggplot(dat.tb, aes(x = height)) + geom_histogram()
+
+## 123
+ggplot(dat.tb, aes(x = height)) + geom_histogram(binwidth = 2)
+
+## 124
+ggplot(dat.tb, aes(x = height)) + geom_histogram(fill = "blue", color = "black")
+
+## 125
+ggplot(dat.tb, aes(x = height,y = weight, color = bloodType))+geom_point()
+
+## 126
+ggplot(dat.tb, aes(x = height, y = weight, shape = bloodType)) + geom_point()
+
