@@ -449,5 +449,160 @@ ggplot(dat.tb, aes(x = height)) + geom_histogram(fill = "blue", color = "black")
 ggplot(dat.tb, aes(x = height,y = weight, color = bloodType))+geom_point()
 
 ## 126
+ggplot(dat.tb, aes(x = height, y = weight, color = bloodType)) + geom_point()
+
+## 127
 ggplot(dat.tb, aes(x = height, y = weight, shape = bloodType)) + geom_point()
+
+## 128
+ggplot(dat.tb, aes(x = height, y = weight, color = bloodType)) +
+  geom_point(size = 3)
+
+## 129
+ggplot(dat.tb, aes(x = height, y = weight, color = bloodType)) +
+  geom_point(size = 3) + labs(title = "身長と体重の関係",
+                              x = "身長(cm)", y = "体重(kg)" )
+
+
+# 6.2.14 グループ別の可視化 --------------------------------------------------------
+## 131
+ggplot(dat.tb, aes(x = height, y = weight)) +
+  geom_point() + facet_wrap(~ team)
+
+## 132
+ggplot(dat.tb, aes(x = height, y = weight)) +
+  geom_point() + geom_smooth(method ="lm")
+
+## 133 平滑化曲線
+ggplot(dat.tb, aes(x = height, y = weight)) +
+  geom_point() + geom_smooth()
+
+## 134
+ggplot(dat.tb, aes(x = height, y = weight, color = League)) +
+  geom_point() + geom_smooth(method = "lm")
+
+## 135
+ggplot(dat.tb, aes(x = position, y = height)) + geom_boxplot()
+
+## 136
+ggplot(dat.tb, aes(x = position2, y = height)) + geom_boxplot() 
+
+## 137
+ggplot(dat.tb, aes(x = position2, y = height)) +
+  geom_boxplot() + geom_jitter(width = 0.2, alpha = 0.5)
+
+## 138
+ggplot(dat.tb, aes(x = bloodType, y = weight))+ geom_violin()
+
+## 139
+ggplot(dat.tb, aes(x = bloodType, y = weight)) +
+  geom_violin() + geom_boxplot(width = 0.1)
+
+## 140
+ggplot(dat.tb, aes(x = bloodType, y = weight, fill = League))+
+  geom_violin()
+
+
+# 6.2.15 グラフのカスタマイズと複合グラフ -------------------------------------------------
+## 141
+ggplot(dat.tb, aes(x = bloodType, y = weight)) +
+  geom_violin() + facet_wrap(~ League)
+
+## 142 上下に配置
+ggplot(dat.tb, aes(x = bloodType, y = weight)) +
+  geom_violin() + facet_grid(League ~ .)
+
+## 143
+ggplot(dat.tb,aes (x = bloodType, y = weight))+
+  geom_violin() + facet_grid(League ~ Year_num)
+
+## 144
+dat.tb |> group_by(Year_num) |> 
+  summarise(avg_weight = mean(weight)) |> 
+  ggplot(aes(x = Year_num, y = avg_weight))+ geom_line()
+
+## 145
+dat.tb |> group_by(Year_num) |> 
+  summarise(avg_weight = mean(weight)) |> 
+  ggplot(aes(x = Year_num, y = avg_weight)) + geom_line() + geom_point()
+
+## 146
+dat.tb |> group_by(Year_num) |> 
+  summarise(avg_weight = mean(weight)) |> 
+  ggplot(aes(x = Year_num, y = avg_weight)) +
+  geom_line() + geom_point() + theme_minimal()
+
+## 147
+dat.tb |> group_by(Year_num) |> 
+  summarise(avg_weight = mean(weight)) |> 
+  ggplot(aes(x = Year_num, y = avg_weight)) +
+  geom_line() + geom_point() + theme_light()
+
+## 148
+dat.tb |> group_by(Year_num) |> 
+  summarise(total_HR = sum(HR, na.rm = TRUE)) |> 
+  ggplot(aes(x = Year_num, y = total_HR)) + geom_col()
+
+## 149
+dat.tb |> group_by(Year_num) |> 
+  summarise(total_HR = sum(HR, na.rm = TRUE)) |> 
+  ggplot(aes(x = factor(Year_num), y = total_HR, fill = factor(Year_num))) +
+  geom_col()
+
+## 150 一旦休憩
+
+# 6.2.16 高度なグラフと保存 --------------------------------------------------------
+## 151 凡例無くす
+dat.tb |> group_by(Year_num) |> 
+  summarise(total_HR = sum(HR, na.rm = TRUE)) |> 
+  ggplot(aes(x = factor(Year_num), y = total_HR, fill = factor(Year_num))) +
+  geom_col() + theme(legend.position = "none")
+
+## 152
+dat.tb |> group_by(Year_num) |> 
+  summarise(total_HR = sum(HR, na.rm = TRUE)) |> 
+  ggplot(aes(x = factor(Year_num), y = total_HR, fill = factor(Year_num))) +
+  geom_col() + scale_fill_brewer(palette = "Set1") +
+  theme(legend.position = "none")
+
+## 153 
+RColorBrewer::display.brewer.all()
+
+## 154
+dat.tb |> group_by(Year_num) |> 
+  summarise(total_HR = sum(HR, na.rm = TRUE)) |> 
+  ggplot(aes(x = factor(Year_num), y = total_HR, fill = factor(Year_num)))+
+  geom_col() + scale_fill_grey() +
+  theme(legend.position = "none")
+
+## 155
+dat.tb |> group_by(Year_num) |> 
+  summarise(total_HR = sum(HR, na.rm = TRUE)) |> 
+  ggplot(aes(x = factor(Year_num), y = total_HR, fill = factor(Year_num)))+
+  geom_col() + scale_fill_brewer(palette = "Blues") +
+  theme_bw() + theme(legend.position = "none")
+
+## 156
+g <- dat.tb |> group_by(Year_num) |> 
+  summarise(total_HR = sum(HR, na.rm = TRUE)) |> 
+  ggplot(aes(x = factor(Year_num),y = total_HR,  fill = factor(Year_num))) +
+  geom_col() + scale_fill_brewer(palette = "Blues") +
+  theme_bw() + theme(legend.position = "none")
+
+## 157
+print(g)
+
+## 158
+ggsave("yearly_hr.png", plot = g, width = 8, height = 6, dpi =300)
+
+#159
+getwd()
+
+## 160 確認
+
+
+# 6.2.17 より高度の ------------------------------------------------------------
+
+
+
 
