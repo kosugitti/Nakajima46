@@ -653,7 +653,71 @@ plotly::plot_ly(dat.tb, x = ~height, y = ~weight, z =~salary,
 
 # 6.2.18 データのネスト化と応用 ----------------------------------------------------
 ## 171
+nested_data <- dat.tb |> group_by(Year_num) |> nest()
 
+## 172
+nested_data
+
+## 173
+nested_data$data[1]
+
+## 174
+nested_data |> mutate(data_size = map_int(data, nrow))
+
+## 175
+nested_data |> mutate(avg_salary = map_dbl(data, ~mean(.$salary)))
+
+## 176
+nested_data |> mutate(avg_salary = map(data, ~mean(.$salary)))
+
+## 177
+nested_data |> mutate(avg_salary = map_dbl(data, ~ mean(.$salary)))
+
+## 178
+nested_data <- nested_data |> 
+  mutate(model = map(data, ~lm(height ~ weight, data = .)))
+
+## 179
+nested_data |> 
+  mutate(coef = map(model, ~ coef(.))) |> 
+  mutate(intercept = map_dbl(coef, ~ .[1]),
+  slop = map_dbl(coef, ~ .[2]))
+
+## 180
+nested_data |> 
+  mutate(model_summary = map(model, ~ summary(.))) |> 
+  mutate(r_squared = map_dbl(model_summary, ~ .$r.squared))
+
+# 6.2.19 データの結合と操作 --------------------------------------------------------
+## 181
+top_players <- dat.tb |> 
+  group_by(team) |> 
+  filter(salary == max(salary)) |> 
+  select(Year_num, team, Name, salary)
+
+## 182
+team_data <- dat.tb |> 
+  group_by(team) |> 
+  summarise(avg_salary = mean(salary),
+            avg_height = mean(height),
+            avg_weight = mean(weight))
+
+## 183
+team_data |> inner_join(top_players, by = "team")
+
+## 184
+team_data |> left_join(top_players, by = "team")
+
+## 185
+team_data |> full_join(top_players, by = "team")
+
+## 186
+team_data |> anti_join(top_players, by = "team")
+
+## 187
+yearly_team_avg <- dat.tb |> 
+  group_by(Year_num, team) |> 
+  summarise(avg_salary = mean(salary), )
 
 # 6.2.20 データ分析の最終まとめ ------------------------------------------------------
 
