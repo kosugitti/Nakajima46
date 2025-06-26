@@ -1,6 +1,6 @@
 vi_file <- tempfile(fileext = ".Rdata")
 download.file("https://www.dropbox.com/scl/fi/gd4ucwnvm10oaar9l1vg7/vi.Rdata?rlkey=iiemu0oo3suiapfq1s02rvues&st=3xvhvtx1&dl=1",
-destfile = vi,mode = "wb")
+destfile = vi_file,mode = "wb")
 load(vi_file)
 
 main_file <- tempfile(fileext = ".Rdata")

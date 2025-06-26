@@ -651,6 +651,7 @@ if(!require(plotly)) install.packages("plotly")
 plotly::plot_ly(dat.tb, x = ~height, y = ~weight, z =~salary,
                 color = ~League, type = "scatter3d", mode = "markers")
 
+
 # 6.2.18 データのネスト化と応用 ----------------------------------------------------
 ## 171
 nested_data <- dat.tb |> group_by(Year_num) |> nest()
@@ -717,10 +718,61 @@ team_data |> anti_join(top_players, by = "team")
 ## 187
 yearly_team_avg <- dat.tb |> 
   group_by(Year_num, team) |> 
-  summarise(avg_salary = mean(salary), )
+  summarise(avg_salary = mean(salary),groups = "drop")
 
+## 188
+df1 <- dat.tb |> filter(Year_num == 2015) |> select(Name, team, salary)
+df2 <- dat.tb |> filter(Year_num == 2020) |> select(Name, team, salary)
+bind_rows(df1, df2)
+
+## 189
+bind_rows("2015" = df1, "2020" = df2, .id = "year") 
+
+## 190 休憩
 # 6.2.20 データ分析の最終まとめ ------------------------------------------------------
+## 191
+if(!require(psych)) install.packages("psych")
+psych::describe(dat.tb |> select(height, weight,salary,HR))
 
+## 192
+if(!require(corrplot)) install.packages("corrplot")
+cor_matrix <- cor(dat.tb |> select(height, weight, salary, HR), use = "complete.obs")
+corrplot::corrplot(cor_matrix,method = "circle")
 
+## 193
+pca_result <- prcomp(dat.tb |> select(height, weight, salary, HR) |> na.omit(),
+                     scale. = TRUE, center = TRUE)
+summary(pca_result)
 
+## 194
+if(!require(factoextra)) install.packages("factoextra")
+factoextra::fviz_pca_biplot(pca_result)
 
+## 195
+scaled_data <- scale(dat.tb |> select(height, weight))
+kmeans_result <- kmeans(scaled_data, centers = 3)
+dat.tb$cluster <-as.factor(kmeans_result$cluster) 
+
+## 196
+ggplot(dat.tb, aes(x = height, y = weight, color = cluster)) +
+  geom_point() +
+  labs(title = "KMeans クラスタリング結果")
+
+## 197
+if(!require(DT)) install.packages("DT")
+DT::datatable(dat.tb |> select(Name, team, position, height, weight, salary))
+
+## 198
+if(!require(gifski)) install.packages("gifski")
+library(gifski)
+if(!require(gganimate)) install.packages("gganimate")
+library(gganimate)
+hr_by_year <- dat.tb |> 
+  group_by(Year_num, team) |> 
+  summarise(total_HR = sum(HR, na.rm = TRUE), .groups = "drop")
+anim <- ggplot(hr_by_year, aes(x = team, y = total_HR, fill = team)) +
+  geom_col() +
+  labs(title = "Year: {frame_time}") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  transition_time(Year_num)
+animate(anim, nframes = 100)
