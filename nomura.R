@@ -6,7 +6,6 @@ dfm <- dfSummary(main)
 dfm$Variable <- vimain$ラベル
 dfm |> stview()
 
-library(dplyr)
 # Yamaguchi ---------------------------------------------------------------
 
 main |> 
@@ -36,7 +35,7 @@ main %>%
 main %>%
   select(matches("03\\/08"))
 
-selected_vars <- vimain %>% 
+vimain %>% 
   filter(str_detect(ラベル, "\\d{2}/\\d{2}")) %>%
   select(ラベル, 変数名) %>%
   mutate(
@@ -45,6 +44,7 @@ selected_vars <- vimain %>%
     type = str_sub(変数名, 1, 2),
     product = str_extract(ラベル, "^[^（]+")) %>%
   select(ItemID, date, type, product, 変数名)
+
 ## まだできてない
 main %>%
   select(SampleID, selected_vars$変数名) %>%
