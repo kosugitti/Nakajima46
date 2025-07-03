@@ -6,10 +6,11 @@ dfm <- dfSummary(main)
 dfm$Variable <- vimain$ラベル
 dfm |> stview()
 
-
 # RECスケール -----------------------------------------------------------------
 # 1. 項目を選択して数値化
 # 行番号を保持（mainのインデックスをretain）
+# 数値化（カテゴリを数値にしてから）
+# スクリュープロット（ポリコリック相関を使用）
 rec_item <- main %>%
   select(matches("^REC_Scale_\\d{2}_MX$")) %>%
   mutate(across(everything(), ~ recode(.,
@@ -18,28 +19,33 @@ rec_item <- main %>%
                                        "どちらともいえない" = 3,
                                        "やや違う" = 2,
                                        "違う" = 1))) %>%
-  mutate(across(everything(), as.numeric)) %>%
-  mutate(row_id = row_number())  # 元のインデックス保持
-
-# 完全ケースのみ（NAなし）を抽出
-rec_item_complete <- rec_item %>%
+  as.data.frame() |> 
+  mutate(across(everything(), as.numeric))%>%
+  mutate(row_id = row_number()) %>%
   drop_na()
 
-result3 <- fa(rec_item_complete, nfactors = 4, fm = "ml", rotate = "geominQ", scores = "regression")
+result3 <- fa(rec_item_num, nfactors = 4, fm = "ml", 
+              rotate = "geominQ", scores = "regression",cor ="poly")
+
+
 
 # 2. 相関行列
-corREC <- cor(rec_item_complete, use = "pairwise")
+corREC <- cor(rec_item, use = "pairwise")
 
 # 3. 固有値（Kaiserの基準、スクリープロット用）
 eigen(corREC)
 
 # 4. 並列分析（因子数の推奨を確認）
-fa.parallel(rec_item_complete, fa = "fa", fm = "ml")
+fa.parallel(rec_item_num, 
+            fa = "fa", 
+            cor = "poly", 
+            fm = "ml", 
+            n.iter = 100, 
+            main = "Scree Plot (Polychoric)")
 
 # 5. 因子分析（推奨数に応数に応じて調整）
 result3 <- fa(rec_item_complete, nfactors = 4, fm = "ml", rotate = "geominQ", scores = "regression")
 print(result3, sort = TRUE)
-
 
 ### ML1(2,4,6,7,11)：流行重視
 ### ML2(3,10)：慎重性
@@ -177,7 +183,6 @@ test <- chisq.test(tbl)
 test$residuals  
 # 標準化残差を見る
 ### クラスタ２と４で有意な差？
-
 
 residuals_df <- as.data.frame(as.table(test$residuals))
 colnames(residuals_df) <- c("Cluster", "Sex", "StdResidual")
@@ -615,7 +620,7 @@ analyze_gap_by_category <- function(main, factor_scores3, rec_item_complete, ps_
     mutate(
       !!ps_col := case_when(
         is.na(.data[[ps_col]]) ~ NA_real_,
-        .data[[ps_col]] %in% c("ここ１ヶ月では飲んでいない", "ここ一ヶ月では食べていない", "")  ~ 0,
+        .data[[ps_col]] %in% c("ここ１ヶ月では飲んでいない", "ここ1ヶ月では食べていない", "")  ~ 0,
         TRUE ~ 1
       ),
       !!pi_col := case_when(
@@ -696,9 +701,4 @@ library(patchwork)
 results$ノンアル$plot + results$ヘルシア$plot +
   results$レッドブル$plot + results$乳製品$plot + 
   results$インスタント食品$plot
-
-
-
-# 症状と医療品 ------------------------------------------------------------------
-
 
